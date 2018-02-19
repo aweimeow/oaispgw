@@ -59,11 +59,10 @@ class SyncOAISPGWInstance(SyncInstanceUsingAnsible):
     def get_extra_attributes(self, o):
         fields = {}
         fields['tenant_message'] = o.tenant_message
-        """
+        
         oaispgw = self.get_oaispgw(o)
 
         for oai in OAISPGWInstance.objects.all():
-            name = oai.tenant_message
             instance = Instance.objects.filter(id=oai.instance_id).first()
 
             ip = []
@@ -72,10 +71,10 @@ class SyncOAISPGWInstance(SyncInstanceUsingAnsible):
                 ip = [port.ip for port in instance.ports.all()]
                 time.sleep(2)
 
-            for service, prefix in [('%s_PRIVATE_IP' % name, '10.0'), ('%s_PUBLIC_IP' % name, '10.8')]:
+            for service, prefix in [('%s_PUBLIC_IP' % name, '10.8')]:
                 service_ip = list(filter(lambda x: x.startswith(prefix), ip))[0]
                 fields[service] = service_ip
-        """
+        
 
         return fields
 
