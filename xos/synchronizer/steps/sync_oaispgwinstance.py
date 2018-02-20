@@ -59,22 +59,13 @@ class SyncOAISPGWInstance(SyncInstanceUsingAnsible):
     def get_extra_attributes(self, o):
         fields = {}
         fields['tenant_message'] = o.tenant_message
-        
-        oaispgw = self.get_oaispgw(o)
 
-        for oai in OAISPGWInstance.objects.all():
-            instance = Instance.objects.filter(id=oai.instance_id).first()
+        instance = Instance.objects.filter(id=o.instance_id).first()
 
-            ip = []
-
-            while not ip:
-                ip = [port.ip for port in instance.ports.all()]
-                time.sleep(2)
-
-            for service, prefix in [('%s_PUBLIC_IP' % name, '10.8')]:
-                service_ip = list(filter(lambda x: x.startswith(prefix), ip))[0]
-                fields[service] = service_ip
-        
+        # Find SPGW Public IP
+        for port in instance.ports.all():
+            if port.ip.startswith('10.8'):
+                fields['SPGW_PUBLIC_IP'] = port.ip
 
         return fields
 
