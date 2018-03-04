@@ -43,29 +43,35 @@ class SyncOAISPGWInstance(SyncInstanceUsingAnsible):
     def __init__(self, *args, **kwargs):
         super(SyncOAISPGWInstance, self).__init__(*args, **kwargs)
 
-    def get_oaispgw(self, o):
-        if not o.owner:
-            return None
+    def get_network_id(self, network_name):
+        network = Network.objects.filter(name=network_name).first()
 
-        oaispgw = OAISPGW.objects.filter(id=o.owner.id)
+        return network.id
 
-        if not oaispgw:
-            return None
+    def get_instance_object(self, instance_id):
+        instance = Instance.objects.filter(id=instance_id).first()
 
-        return oaispgw[0]
+        return instance
 
-    # Gets the attributes that are used by the Ansible template but are not
-    # part of the set of default attributes.
-    def get_extra_attributes(self, o):
+    def get_information(self, o):
         fields = {}
-        fields['tenant_message'] = o.tenant_message
 
-        instance = Instance.objects.filter(id=o.instance_id).first()
+        collect_network = [
+           {'name': 'SPGW_PUBLIC_IP', 'net_name': 'public'},
+           {'name': 'SPGW_PRIVATE_IP', 'net_name': 'vspgw_network'}
+        ]
 
-        # Find SPGW Public IP
-        for port in instance.ports.all():
-            if port.ip.startswith('10.8'):
-                fields['SPGW_PUBLIC_IP'] = port.ip
+        instance = self.get_instance_object(o.instance_id)
+
+        for data in collect_network:
+            network_id = self.get_network_id(data['net_name'])
+            port = filter(lambda x: x.network_id == network_id, instance.ports.all())[0]
+            fields[data['name']] = port.ip
+
+        return fields
+
+    def get_extra_attributes(self, o):
+        fields = self.get_information(o)
 
         return fields
 

@@ -23,7 +23,7 @@
   sudo: yes
   gather_facts: no
   vars:
-    - SPGW_PRIVATE_IP: "10.0.8.1"
+    - SPGW_PRIVATE_IP: "{{ SPGW_PRIVATE_IP }}"
     - SPGW_PUBLIC_IP: "{{ SPGW_PUBLIC_IP }}"
   roles:
     - pre-requirement
