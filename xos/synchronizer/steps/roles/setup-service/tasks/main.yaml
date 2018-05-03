@@ -1,0 +1,25 @@
+- name: Check if there is already a systemd definition of OAI-SPGW
+  stat:
+    path: /etc/systemd/system/oaispgw.service
+  register: service_stat
+
+- name: Stop running systemd service of OAI-SPGW if exists
+  systemd:
+    name: "oaispgw.service"
+    state: stopped
+  when: service_stat.stat.exists
+
+- name: Setup systemd service definition of OAI-SPGW
+  copy:
+    src: "oaispgw.service"
+    dest: "/etc/systemd/system/"
+
+- name: Start service
+  systemd:
+    name: "oaispgw.service"
+    state: started
+
+- name: ReStart service avoid interface can't config error
+  systemd:
+    name: "oaispgw.service"
+    state: restarted
